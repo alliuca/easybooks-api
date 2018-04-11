@@ -11,8 +11,10 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
+app.use(express.static('./public'));
 
 const invoicesDirPath = './files/invoices';
+const invoicesPDFPublicPath = './public/files/invoices';
 
 app.get('/api/invoices', (req, res) => {
   fs.readdir(invoicesDirPath, (err, files) => {
@@ -42,10 +44,14 @@ app.get('/api/invoices/:number', (req, res) => {
 app.get('/api/invoices/:number/pdf', (req, res) => {
   const invoiceToGet = req.params.number;
   const invoiceToGetPath = `${invoicesDirPath}/invoice-${invoiceToGet}.json`;
-  const invoicePdfPath = `${invoicesDirPath}/invoice-${invoiceToGet}.pdf`;
+  const invoicePdfPath = `${invoicesPDFPublicPath}/invoice-${invoiceToGet}.pdf`;
 
   if (!fs.existsSync(invoiceToGetPath))
     return res.status(200).send({ message: `Invoice #${invoiceToGet} not found` });
+
+  if (!fs.existsSync(invoicesPDFPublicPath))
+    fs.mkdirSync(invoicesPDFPublicPath);
+
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
 
   const doc = new PDFDocument();
@@ -53,7 +59,7 @@ app.get('/api/invoices/:number/pdf', (req, res) => {
   doc.pipe(fs.createWriteStream(invoicePdfPath));
   invoiceTemplate(doc, JSON.parse(data));
 
-  res.status(200).send(`${invoicePdfPath} created`);
+  res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
 
 app.post('/api/invoices/:number', (req, res) => {
