@@ -1,4 +1,5 @@
 node_modules
-files/
+files/invoices
+public/files/invoices
 
 *-error.log
