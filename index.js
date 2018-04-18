@@ -22,7 +22,7 @@ app.get('/api/invoices', (req, res) => {
       return res.status(500).send({ message: `${err}` });
 
     var output = [];
-    files.filter(file => file.split('.').pop() !== 'pdf').map(file => {
+    files.map(file => {
       const data = fs.readFileSync(`${invoicesDirPath}/${file}`, 'utf8');
       output.push(JSON.parse(data));
     });
