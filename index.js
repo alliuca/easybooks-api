@@ -1,10 +1,12 @@
 const fs = require('fs');
 const express = require('express');
+const busboyBodyParser = require('busboy-body-parser');
 const PDFDocument = require('pdfkit');
 const invoiceTemplate = require('./files/templates/invoice.js');
 const app = express();
 
 app.use(express.json());
+app.use(busboyBodyParser());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
@@ -13,7 +15,9 @@ app.use((req, res, next) => {
 });
 app.use(express.static('./public'));
 
+const filesDirPath = './files';
 const invoicesDirPath = './files/invoices';
+const uploadDirPath = './public/files/upload';
 const invoicesPDFPublicPath = './public/files/invoices';
 
 app.get('/api/invoices', (req, res) => {
@@ -93,6 +97,48 @@ app.delete('/api/invoices/:number', (req, res) => {
       return res.status(500).send({ message: `${err}` });
 
     res.status(200).send(`Invoice #${invoiceToDelete} has been deleted`);
+  });
+});
+
+app.get('/api/settings', (req, res) => {
+  fs.readFile(`${filesDirPath}/settings.json`, (err, data) => {
+    if (err)
+      return res.status(500).send({ message: `${err}` });
+
+    res.status(200).send(JSON.parse(data));
+  });
+});
+
+app.post('/api/settings', (req, res) => {
+  const settingsPath = `${filesDirPath}/settings.json`;
+
+  const data = req.body;
+  fs.writeFile(settingsPath, JSON.stringify(data), (err) => {
+    if (err)
+      return res.status(500).send({ message: `${err}` });
+
+    res.status(200).send(`Settings has been saved correctly`);
+  });
+});
+
+app.post('/api/upload', (req, res) => {
+  if (!fs.existsSync(uploadDirPath)) {
+    fs.mkdirSync(uploadDirPath);
+  }
+
+  const files = req.files;
+  const key = Object.keys(files)[0];
+
+  if (!fs.existsSync(`${uploadDirPath}/${key}`)) {
+    fs.mkdirSync(`${uploadDirPath}/${key}`);
+  }
+
+  const newFilePath = `${uploadDirPath}/${key}/${files[key].name}`;
+  fs.writeFile(newFilePath, files[key].data, (err) => {
+    if (err)
+      return res.status(500).send({ message: `${err}` });
+
+    res.status(200).send(`${newFilePath} has been saved correctly`);
   });
 });
 

@@ -1,5 +1,7 @@
 node_modules
 files/invoices
+files/settings.json
 public/files/invoices
+public/files/upload
 
 *-error.log
