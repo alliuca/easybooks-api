@@ -57,11 +57,12 @@ app.get('/api/invoices/:number/pdf', (req, res) => {
     fs.mkdirSync(invoicesPDFPublicPath);
 
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
+  const profile = fs.readFileSync(`${filesDirPath}/profile.json`, 'utf8');
 
   const doc = new PDFDocument();
 
   doc.pipe(fs.createWriteStream(invoicePdfPath));
-  invoiceTemplate(doc, JSON.parse(data));
+  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), JSON.parse(profile)));
 
   res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
@@ -118,6 +119,27 @@ app.post('/api/settings', (req, res) => {
       return res.status(500).send({ message: `${err}` });
 
     res.status(200).send(`Settings has been saved correctly`);
+  });
+});
+
+app.get('/api/profile', (req, res) => {
+  fs.readFile(`${filesDirPath}/profile.json`, (err, data) => {
+    if (err)
+      return res.status(500).send({ message: `${err}` });
+
+    res.status(200).send(JSON.parse(data));
+  });
+});
+
+app.post('/api/profile', (req, res) => {
+  const profilePath = `${filesDirPath}/profile.json`;
+
+  const data = req.body;
+  fs.writeFile(profilePath, JSON.stringify(data), (err) => {
+    if (err)
+      return res.status(500).send({ message: `${err}` });
+
+    res.status(200).send(`Profile has been saved correctly`);
   });
 });
 

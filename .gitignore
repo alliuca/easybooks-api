@@ -1,6 +1,6 @@
 node_modules
 files/invoices
-files/settings.json
+files/*.json
 public/files/invoices
 public/files/upload
 

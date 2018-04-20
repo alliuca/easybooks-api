@@ -4,7 +4,7 @@ module.exports = (doc, data) => {
   var fontSizeSmall = 8;
   var fontSizeTableHeading = 11;
   var paddingHorizontal = 35;
-  var primaryColor = '#488f45';
+  var primaryColor = data.settings.brandColor;
   var secondaryColor = '#908c8c';
 
   // Add top coloured background
@@ -15,47 +15,48 @@ module.exports = (doc, data) => {
   // Add first info column
 
   doc.circle(60, 62, 20)
-    .fill('white');
+    .fill('white')
+    .image(`${process.cwd()}/public/files/upload/logo/${data.settings.logo}`, 40, 42, { fit: [40, 40] });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('John Doe', 90, 40);
+    .text(data.name, 90, 40);
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('JHNDOE1234', 90, 60);
+    .text(data.taxCode, 90, 60);
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('VAT: 0123456789', 90, 80);
+    .text(`VAT: ${data.vat}`, 90, 80);
 
   // Add second info column
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', 200, 40, { width: 200, align: 'right' });
+    .text(data.phone, 200, 40, { width: 200, align: 'right' });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', 200, 60, { width: 200, align: 'right' });
+    .text(data.email, 200, 60, { width: 200, align: 'right' });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', 200, 80, { width: 200, align: 'right' });
+    .text(data.website, 200, 80, { width: 200, align: 'right' });
 
   // Add third info column
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', page.width - 220, 40, { width: 180, align: 'right' });
+    .text(data.addressStreet, page.width - 220, 40, { width: 180, align: 'right' });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', page.width - 220, 60, { width: 180, align: 'right' });
+    .text(data.addressCityCountry, page.width - 220, 60, { width: 180, align: 'right' });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')
-    .text('+1 555-555', page.width - 220, 80, { width: 180, align: 'right' });
+    .text(data.postalCode, page.width - 220, 80, { width: 180, align: 'right' });
 
   // Add billed to
 
@@ -95,7 +96,7 @@ module.exports = (doc, data) => {
 
   doc.fontSize(30)
     .fillColor(primaryColor)
-    .text(data.amount, page.width - (200 + paddingHorizontal), 170, { width: 200, align: 'right' });
+    .text(`${data.currency} ${data.amount}`, page.width - (200 + paddingHorizontal), 170, { width: 200, align: 'right' });
 
   // Add items' table
 
@@ -136,7 +137,7 @@ module.exports = (doc, data) => {
 
     doc.fontSize(fontSizeBody)
       .fillColor('black')
-      .text(data.items[i].amount, page.width - (70 + paddingHorizontal), 350 + (i * spacingY), { width: 70, align: 'right' });
+      .text(`${data.currency} ${data.items[i].amount}`, page.width - (70 + paddingHorizontal), 350 + (i * spacingY), { width: 70, align: 'right' });
 
     doc.moveTo(30, 385 + (i * spacingY))
         .lineTo(page.width - 30, 385 + (i * spacingY))
@@ -166,16 +167,16 @@ module.exports = (doc, data) => {
   };
   data.fees.items.map(item => {
     fees.names += `${item.name}\n`;
-    fees.values += `${item.value}\n`;
+    fees.values += `${data.currency} ${item.value}\n`;
   });
 
   doc.fontSize(fontSizeTableHeading)
     .fillColor(primaryColor)
-    .text(`Subtotal\n${fees.names}Total`, 250, 515, { width: 200, align: 'right', lineGap: 12 });
+    .text(`Subtotal\n${fees.names}Total\n\nAmount Due`, 250, 515, { width: 200, align: 'right', lineGap: 12 });
 
   doc.fontSize(fontSizeBody)
     .fillColor('black')
-    .text(`${data.subtotal}\n${fees.values}${data.amount}`, page.width - (100 + paddingHorizontal), 515, { width: 100, align: 'right', lineGap: 13 });
+    .text(`${data.currency} ${data.subtotal}\n${fees.values}${data.currency} ${data.amount}\n\n${data.currency} ${data.amount}`, page.width - (100 + paddingHorizontal), 515, { width: 100, align: 'right', lineGap: 13 });
 
   // Add other notes (e.g. legal)
 
