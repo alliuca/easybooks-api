@@ -57,12 +57,13 @@ app.get('/api/invoices/:number/pdf', (req, res) => {
     fs.mkdirSync(invoicesPDFPublicPath);
 
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
+  const settings = fs.readFileSync(`${filesDirPath}/settings.json`, 'utf8');
   const profile = fs.readFileSync(`${filesDirPath}/profile.json`, 'utf8');
 
   const doc = new PDFDocument();
 
   doc.pipe(fs.createWriteStream(invoicePdfPath));
-  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), JSON.parse(profile)));
+  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), JSON.parse(settings), JSON.parse(profile)));
 
   res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
