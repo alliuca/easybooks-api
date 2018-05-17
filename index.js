@@ -2,15 +2,38 @@ const fs = require('fs');
 const express = require('express');
 const busboyBodyParser = require('busboy-body-parser');
 const PDFDocument = require('pdfkit');
+const mongoose = require('mongoose');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
+const passportService = require('./services/passport');
 const invoiceTemplate = require('./files/templates/invoice.js');
 const app = express();
 
+const requireAuth = passport.authenticate('jwt', { session: false });
+
+mongoose.connect('mongodb://127.0.0.1/easybooks');
+
+// consider moving all this in a separate thing
+const User = require('./models/user');
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  // console.log('CONNECTED TO MONGODB');
+  User.findOne({ email: 'demo@easybooks.io' }).then(user => {
+    if (!user) {
+      var demoUser = new User({ email: 'demo@easybooks.io', password: 'demo@easybooks.io' });
+      demoUser.save();
+    }
+  });
+});
+
 app.use(express.json());
+app.use(passport.initialize());
 app.use(busboyBodyParser());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
 });
 app.use(express.static('./public'));
@@ -20,7 +43,25 @@ const invoicesDirPath = './files/invoices';
 const uploadDirPath = './public/files/upload';
 const invoicesPDFPublicPath = './public/files/invoices';
 
-app.get('/api/invoices', (req, res) => {
+app.post('/api/login', (req, res) => {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err || !user) {
+      return res.status(200).json({
+        message: 'Something went wrong',
+        user: user,
+      });
+    }
+
+    req.login(user, { session: false }, err => {
+      if (err)
+        res.send(err);
+      const token = jwt.sign(user.toJSON(), 'some_jwt_secret');
+      return res.json({ user, token });
+    });
+  })(req, res);
+});
+
+app.get('/api/invoices', requireAuth, (req, res) => {
   fs.readdir(invoicesDirPath, (err, files) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
