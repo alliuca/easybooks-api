@@ -11,7 +11,7 @@ const app = express();
 
 const requireAuth = passport.authenticate('jwt', { session: false });
 
-mongoose.connect('mongodb://127.0.0.1/easybooks');
+mongoose.connect('mongodb://mongo:27017/easybooks');
 
 // consider moving all this in a separate thing
 const User = require('./models/user');
