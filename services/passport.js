@@ -20,7 +20,7 @@ const jwtLogin = new JWYStrategy({
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
   secretOrKey: 'some_jwt_secret',
 }, (payload, done) => {
-  return User.findOneById(payload.id)
+  return User.findOne({ _id: payload._id })
     .then(user => done(null, user))
     .catch(err => done(err));
 });
