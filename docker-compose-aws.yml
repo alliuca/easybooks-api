@@ -12,6 +12,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.aws
+    volumes:
+      - /home/ubuntu/apps/easybooks-api
     ports:
       - 8080:8080
     links:
