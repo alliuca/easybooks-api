@@ -16,7 +16,7 @@ module.exports = (doc, data) => {
 
   doc.circle(60, 62, 20)
     .fill('white')
-    .image(`${process.cwd()}/public/files/upload/logo/${data.settings.logo}`, 40, 42, { fit: [40, 40] });
+    .image(`${process.cwd()}/public/files/upload/logo/${data.settings.logo.file.name}`, 40, 42, { fit: [40, 40] });
 
   doc.fontSize(fontSizeBody)
     .fillColor('white')

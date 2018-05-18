@@ -116,7 +116,7 @@ app.get('/api/invoices/:number/pdf', requireAuth, (req, res) => {
   const doc = new PDFDocument();
 
   doc.pipe(fs.createWriteStream(invoicePdfPath));
-  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), JSON.parse(settings), JSON.parse(profile)));
+  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), { settings: JSON.parse(settings) }, JSON.parse(profile)));
 
   res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
