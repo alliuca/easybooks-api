@@ -65,6 +65,10 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/api/invoices', requireAuth, (req, res) => {
+  if (!fs.existsSync(invoicesDirPath)) {
+    fs.mkdirSync(invoicesDirPath);
+  }
+
   fs.readdir(invoicesDirPath, (err, files) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
