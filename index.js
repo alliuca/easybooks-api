@@ -151,7 +151,7 @@ app.delete('/api/invoices/:number', (req, res) => {
 });
 
 app.get('/api/settings', (req, res) => {
-  fs.readFile(`${filesDirPath}/settings.json`, (err, data) => {
+  fs.readFile(`${filesDirPath}/settings.json`, { encoding: 'utf8', flag: 'a+' }, (err, data) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
 
