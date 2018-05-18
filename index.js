@@ -105,8 +105,8 @@ app.get('/api/invoices/:number/pdf', (req, res) => {
     fs.mkdirSync(invoicesPDFPublicPath);
 
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
-  const settings = fs.readFileSync(`${filesDirPath}/settings.json`, 'utf8');
-  const profile = fs.readFileSync(`${filesDirPath}/profile.json`, 'utf8');
+  const settings = fs.readFileSync(`${filesDirPath}/settings.json`, { encoding: 'utf8', flag: 'a+' });
+  const profile = fs.readFileSync(`${filesDirPath}/profile.json`, { encoding: 'utf8', flag: 'a+' });
 
   const doc = new PDFDocument();
 
