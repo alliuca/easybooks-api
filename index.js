@@ -45,6 +45,11 @@ const filesDirPath = './files';
 const invoicesDirPath = './files/invoices';
 const uploadDirPath = './public/files/upload';
 const invoicesPDFPublicPath = './public/files/invoices';
+const settingsFile = `${filesDirPath}/settings.json`;
+const profileFile = `${filesDirPath}/profile.json`;
+
+if (!fs.existsSync(settingsFile)) fs.writeFileSync(settingsFile, {});
+if (!fs.existsSync(profileFile)) fs.writeFileSync(profileFile, {});
 
 app.post('/api/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
@@ -105,8 +110,8 @@ app.get('/api/invoices/:number/pdf', requireAuth, (req, res) => {
     fs.mkdirSync(invoicesPDFPublicPath);
 
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
-  const settings = fs.readFileSync(`${filesDirPath}/settings.json`, { encoding: 'utf8', flag: 'a+' });
-  const profile = fs.readFileSync(`${filesDirPath}/profile.json`, { encoding: 'utf8', flag: 'a+' });
+  const settings = fs.readFileSync(`${filesDirPath}/settings.json`, 'utf8');
+  const profile = fs.readFileSync(`${filesDirPath}/profile.json`, 'utf8');
 
   const doc = new PDFDocument();
 
@@ -151,7 +156,7 @@ app.delete('/api/invoices/:number', requireAuth, (req, res) => {
 });
 
 app.get('/api/settings', requireAuth, (req, res) => {
-  fs.readFile(`${filesDirPath}/settings.json`, { encoding: 'utf8', flag: 'a+' }, (err, data) => {
+  fs.readFile(`${filesDirPath}/settings.json`, { encoding: 'utf8' }, (err, data) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
 
