@@ -1,4 +1,6 @@
 const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const express = require('express');
 const busboyBodyParser = require('busboy-body-parser');
 const PDFDocument = require('pdfkit');
@@ -206,4 +208,14 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
-app.listen(3030, () => console.log('Listening on port 3030'));
+const httpServer = http.createServer(app);
+httpServer.listen(3030, () => console.log('Listening on port 3030'));
+
+// Create HTTPS server on production
+if (fs.existsSync('/etc/letsencrypt/live/apis.alliuca.com/')) {
+  const privateKey  = fs.readFileSync('/etc/letsencrypt/live/apis.alliuca.com/privkey.pem', 'utf8');
+  const certificate = fs.readFileSync('/etc/letsencrypt/live/apis.alliuca.com/fullchain.pem', 'utf8');
+  const credentials = {key: privateKey, cert: certificate};
+  const httpsServer = https.createServer(credentials, app);
+  httpsServer.listen(3443, () => console.log('Listening on port 3443'));
+}
