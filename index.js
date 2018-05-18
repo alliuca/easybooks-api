@@ -33,12 +33,12 @@ db.once('open', function() {
 app.use(express.json());
 app.use(passport.initialize());
 app.use(busboyBodyParser());
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   res.header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS, POST, DELETE');
-//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-//   next();
-// });
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 app.use(express.static('./public'));
 
 const filesDirPath = './files';
@@ -82,7 +82,7 @@ app.get('/api/invoices', requireAuth, (req, res) => {
   });
 });
 
-app.get('/api/invoices/:number', (req, res) => {
+app.get('/api/invoices/:number', requireAuth, (req, res) => {
   const invoiceToGet = req.params.number;
   const invoiceToGetPath = `${invoicesDirPath}/invoice-${invoiceToGet}.json`;
 
@@ -93,7 +93,7 @@ app.get('/api/invoices/:number', (req, res) => {
   res.status(200).send(JSON.parse(data));
 });
 
-app.get('/api/invoices/:number/pdf', (req, res) => {
+app.get('/api/invoices/:number/pdf', requireAuth, (req, res) => {
   const invoiceToGet = req.params.number;
   const invoiceToGetPath = `${invoicesDirPath}/invoice-${invoiceToGet}.json`;
   const invoicePdfPath = `${invoicesPDFPublicPath}/invoice-${invoiceToGet}.pdf`;
@@ -116,7 +116,7 @@ app.get('/api/invoices/:number/pdf', (req, res) => {
   res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
 
-app.post('/api/invoices/:number', (req, res) => {
+app.post('/api/invoices/:number', requireAuth, (req, res) => {
   const newInvoiceNumber = req.params.number;
   const newInvoicePath = `${invoicesDirPath}/invoice-${newInvoiceNumber}.json`;
 
@@ -138,7 +138,7 @@ app.post('/api/invoices/:number', (req, res) => {
   });
 });
 
-app.delete('/api/invoices/:number', (req, res) => {
+app.delete('/api/invoices/:number', requireAuth, (req, res) => {
   const invoiceToDelete = req.params.number;
   const invoiceToDeletePath = `${invoicesDirPath}/invoice-${invoiceToDelete}.json`;
 
@@ -150,7 +150,7 @@ app.delete('/api/invoices/:number', (req, res) => {
   });
 });
 
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', requireAuth, (req, res) => {
   fs.readFile(`${filesDirPath}/settings.json`, { encoding: 'utf8', flag: 'a+' }, (err, data) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
@@ -159,7 +159,7 @@ app.get('/api/settings', (req, res) => {
   });
 });
 
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', requireAuth, (req, res) => {
   const settingsPath = `${filesDirPath}/settings.json`;
 
   const data = req.body;
@@ -171,7 +171,7 @@ app.post('/api/settings', (req, res) => {
   });
 });
 
-app.get('/api/profile', (req, res) => {
+app.get('/api/profile', requireAuth, (req, res) => {
   fs.readFile(`${filesDirPath}/profile.json`, (err, data) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
@@ -180,7 +180,7 @@ app.get('/api/profile', (req, res) => {
   });
 });
 
-app.post('/api/profile', (req, res) => {
+app.post('/api/profile', requireAuth, (req, res) => {
   const profilePath = `${filesDirPath}/profile.json`;
 
   const data = req.body;
@@ -192,7 +192,7 @@ app.post('/api/profile', (req, res) => {
   });
 });
 
-app.post('/api/upload', (req, res) => {
+app.post('/api/upload', requireAuth, (req, res) => {
   if (!fs.existsSync(uploadDirPath)) {
     fs.mkdirSync(uploadDirPath);
   }
