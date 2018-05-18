@@ -14,7 +14,7 @@ const app = express();
 
 const requireAuth = passport.authenticate('jwt', { session: false });
 
-mongoose.connect('mongodb://mongo:27017/easybooks');
+mongoose.connect(`mongodb://${process.env.MONGO_HOST}/easybooks`);
 
 // consider moving all this in a separate thing
 const User = require('./models/user');
@@ -48,8 +48,8 @@ const invoicesPDFPublicPath = './public/files/invoices';
 const settingsFile = `${filesDirPath}/settings.json`;
 const profileFile = `${filesDirPath}/profile.json`;
 
-if (!fs.existsSync(settingsFile)) fs.writeFileSync(settingsFile, {});
-if (!fs.existsSync(profileFile)) fs.writeFileSync(profileFile, {});
+if (!fs.existsSync(settingsFile)) fs.writeFileSync(settingsFile, '{}');
+if (!fs.existsSync(profileFile)) fs.writeFileSync(profileFile, '{}');
 
 app.post('/api/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
