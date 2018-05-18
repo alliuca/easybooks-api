@@ -6,3 +6,5 @@ public/files/invoices
 public/files/upload
 
 *-error.log
+
+.env

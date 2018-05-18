@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
@@ -209,7 +210,7 @@ app.post('/api/upload', (req, res) => {
 });
 
 const httpServer = http.createServer(app);
-httpServer.listen(3030, () => console.log('Listening on port 3030'));
+httpServer.listen(process.env.HTTP_PORT, () => console.log(`Listening on port ${process.env.HTTP_PORT}`));
 
 // Create HTTPS server on production
 if (fs.existsSync('/etc/letsencrypt/live/apis.alliuca.com/')) {
@@ -217,5 +218,5 @@ if (fs.existsSync('/etc/letsencrypt/live/apis.alliuca.com/')) {
   const certificate = fs.readFileSync('/etc/letsencrypt/live/apis.alliuca.com/fullchain.pem', 'utf8');
   const credentials = {key: privateKey, cert: certificate};
   const httpsServer = https.createServer(credentials, app);
-  httpsServer.listen(3443, () => console.log('Listening on port 3443'));
+  httpsServer.listen(process.env.HTTPS_PORT, () => console.log(`Listening on port ${process.env.HTTPS_PORT}`));
 }
