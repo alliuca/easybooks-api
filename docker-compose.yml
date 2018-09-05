@@ -16,3 +16,5 @@ services:
       - mongo
     depends_on:
       - mongo
+    volumes:
+      - '.:/home/nodejs/api'

@@ -106,17 +106,21 @@ module.exports = (doc, data) => {
       .strokeColor(primaryColor)
       .stroke();
 
-  doc.fontSize(fontSizeTableHeading)
-    .fillColor(primaryColor)
-    .text('Description', 35, 315);
+  doc.font('Helvetica-Bold');
 
   doc.fontSize(fontSizeTableHeading)
     .fillColor(primaryColor)
-    .text('Hours', 440, 315, { width: 60, align: 'right' });
+    .text('Description', 35, 305);
 
   doc.fontSize(fontSizeTableHeading)
     .fillColor(primaryColor)
-    .text('Amount', page.width - (70 + paddingHorizontal), 315, { width: 70, align: 'right' });
+    .text('Hours', 440, 305, { width: 60, align: 'right' });
+
+  doc.fontSize(fontSizeTableHeading)
+    .fillColor(primaryColor)
+    .text('Amount', page.width - (70 + paddingHorizontal), 305, { width: 70, align: 'right' });
+
+  doc.font('Helvetica');
 
   var i = 0;
   var spacingY = 50;
@@ -125,22 +129,22 @@ module.exports = (doc, data) => {
 
     doc.fontSize(fontSizeBody)
       .fillColor('black')
-      .text(data.items[i].name, 35, 350 + (i * spacingY));
+      .text(data.items[i].name, 35, 340 + (i * spacingY));
 
     doc.fontSize(fontSizeSmall)
       .fillColor(secondaryColor)
-      .text(data.items[i].description, 35, 370 + (i * spacingY));
+      .text(data.items[i].description, 35, 360 + (i * spacingY));
 
     doc.fontSize(fontSizeBody)
       .fillColor('black')
-      .text(data.items[i].hours, 440, 350 + (i * spacingY), { width: 60, align: 'right' });
+      .text(data.items[i].hours, 440, 340 + (i * spacingY), { width: 60, align: 'right' });
 
     doc.fontSize(fontSizeBody)
       .fillColor('black')
-      .text(`${data.currency} ${data.items[i].amount}`, page.width - (70 + paddingHorizontal), 350 + (i * spacingY), { width: 70, align: 'right' });
+      .text(`${data.currency} ${data.items[i].amount}`, page.width - (70 + paddingHorizontal), 340 + (i * spacingY), { width: 70, align: 'right' });
 
-    doc.moveTo(30, 385 + (i * spacingY))
-        .lineTo(page.width - 30, 385 + (i * spacingY))
+    doc.moveTo(30, 375 + (i * spacingY))
+        .lineTo(page.width - 30, 375 + (i * spacingY))
         .lineWidth(1)
         .strokeColor(secondaryColor)
         .stroke();
@@ -153,11 +157,11 @@ module.exports = (doc, data) => {
 
   doc.fontSize(fontSizeBody)
     .fillColor(secondaryColor)
-    .text('Invoice Terms', 35, 512, { width: 180 });
+    .text('Invoice Terms', 35, 515, { width: 200 });
 
-  doc.fontSize(fontSizeBody)
+  doc.fontSize(fontSizeBody - 1)
     .fillColor('black')
-    .text(data.terms, 35, 532, { width: 180 });
+    .text(data.terms, 35, 535, { width: 200, lineGap: 3 });
 
   // Add optional fees
 
@@ -170,13 +174,17 @@ module.exports = (doc, data) => {
     fees.values += `${data.currency} ${item.value}\n`;
   });
 
+  doc.font('Helvetica-Bold');
+
   doc.fontSize(fontSizeTableHeading)
     .fillColor(primaryColor)
     .text(`Subtotal\n${fees.names}Total\n\nAmount Due`, 250, 515, { width: 200, align: 'right', lineGap: 12 });
 
+  doc.font('Helvetica');
+
   doc.fontSize(fontSizeBody)
     .fillColor('black')
-    .text(`${data.currency} ${data.subtotal}\n${fees.values}${data.currency} ${data.amount}\n\n${data.currency} ${data.amount}`, page.width - (100 + paddingHorizontal), 515, { width: 100, align: 'right', lineGap: 13 });
+    .text(`${data.currency} ${data.subtotal}\n${fees.values}${data.currency} ${data.amount}\n\n${data.currency} ${data.amount}`, page.width - (100 + paddingHorizontal), 515, { width: 100, align: 'right', lineGap: 13.8 });
 
   // Add other notes (e.g. legal)
 
@@ -184,9 +192,13 @@ module.exports = (doc, data) => {
   const textWidth = doc.widthOfString(text);
   const textHeight = doc.heightOfString(text, { width: textWidth });
 
-  doc.fontSize(fontSizeBody)
+  doc.font('Helvetica-Oblique');
+
+  doc.fontSize(fontSizeSmall)
     .fillColor('black')
     .text(text, 35, page.height - 75 - textHeight);
+
+  doc.font('Helvetica');
 
   doc.end();
 }
