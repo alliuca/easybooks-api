@@ -96,7 +96,7 @@ module.exports = (doc, data) => {
 
   doc.fontSize(30)
     .fillColor(primaryColor)
-    .text(`${data.currency} ${data.amount}`, page.width - (200 + paddingHorizontal), 170, { width: 200, align: 'right' });
+    .text(`${data.currency.symbol} ${data.amount}`, page.width - (200 + paddingHorizontal), 170, { width: 200, align: 'right' });
 
   // Add items' table
 
@@ -141,7 +141,7 @@ module.exports = (doc, data) => {
 
     doc.fontSize(fontSizeBody)
       .fillColor('black')
-      .text(`${data.currency} ${data.items[i].amount}`, page.width - (70 + paddingHorizontal), 340 + (i * spacingY), { width: 70, align: 'right' });
+      .text(`${data.currency.symbol} ${data.items[i].amount}`, page.width - (70 + paddingHorizontal), 340 + (i * spacingY), { width: 70, align: 'right' });
 
     doc.moveTo(30, 375 + (i * spacingY))
         .lineTo(page.width - 30, 375 + (i * spacingY))
@@ -171,7 +171,7 @@ module.exports = (doc, data) => {
   };
   data.fees.items.map(item => {
     fees.names += `${item.name}\n`;
-    fees.values += `${data.currency} ${item.value}\n`;
+    fees.values += `${data.currency.symbol} ${item.value}\n`;
   });
 
   doc.font('Helvetica-Bold');
@@ -184,7 +184,7 @@ module.exports = (doc, data) => {
 
   doc.fontSize(fontSizeBody)
     .fillColor('black')
-    .text(`${data.currency} ${data.subtotal}\n${fees.values}${data.currency} ${data.amount}\n\n${data.currency} ${data.amount}`, page.width - (100 + paddingHorizontal), 515, { width: 100, align: 'right', lineGap: 13.8 });
+    .text(`${data.currency.symbol} ${data.subtotal}\n${fees.values}${data.currency.symbol} ${data.amount}\n\n${data.currency.symbol} ${data.amount}`, page.width - (110 + paddingHorizontal), 515, { width: 110, align: 'right', lineGap: 13.8 });
 
   // Add other notes (e.g. legal)
 

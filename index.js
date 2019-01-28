@@ -9,7 +9,6 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const passportService = require('./services/passport');
-const invoiceTemplate = require('./files/templates/invoice.js');
 const app = express();
 
 const requireAuth = passport.authenticate('jwt', { session: false });
@@ -53,6 +52,7 @@ if (!fs.existsSync(profileFile)) fs.writeFileSync(profileFile, '{}');
 
 app.post('/api/login', (req, res) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
+    console.log('user', user);
     if (err || !user) {
       return res.status(200).json({
         message: 'Something went wrong',
@@ -74,13 +74,18 @@ app.get('/api/invoices', requireAuth, (req, res) => {
     fs.mkdirSync(invoicesDirPath);
   }
 
-  fs.readdir(invoicesDirPath, (err, files) => {
+  fs.readdir(invoicesDirPath, (err, dirs) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
 
     var output = [];
-    files.map(file => {
-      const data = fs.readFileSync(`${invoicesDirPath}/${file}`, 'utf8');
+    dirs.map(dir => {
+      const files = fs.readdirSync(`${invoicesDirPath}/${dir}`);
+
+      if (!files)
+        return res.status(500).send({ message: `${err}` });
+
+      const data = fs.readFileSync(`${invoicesDirPath}/${dir}/${files[0]}`, 'utf8');
       output.push(JSON.parse(data));
     });
     res.status(200).send(output);
@@ -88,23 +93,36 @@ app.get('/api/invoices', requireAuth, (req, res) => {
 });
 
 app.get('/api/invoices/:number', requireAuth, (req, res) => {
-  const invoiceToGet = req.params.number;
-  const invoiceToGetPath = `${invoicesDirPath}/invoice-${invoiceToGet}.json`;
+  const { number } = req.params;
+  const invoiceToGetPath = `${invoicesDirPath}/${number}`;
 
   if (!fs.existsSync(invoiceToGetPath))
-    return res.status(200).send({ message: `Invoice #${invoiceToGet} not found` });
+    return res.status(200).send({ message: `Invoice #${number} not found` });
+
+  const files = fs.readdirSync(invoiceToGetPath);
+  const locales = [];
+  files.map(file => locales.push(file.substring(0, 2)));
+  res.status(200).send(locales);
+});
+
+app.get('/api/invoices/:number/:locale', requireAuth, (req, res) => {
+  const { number, locale } = req.params;
+  const invoiceToGetPath = `${invoicesDirPath}/${number}/${locale.toUpperCase()}_invoice-${number}.json`;
+
+  if (!fs.existsSync(invoiceToGetPath))
+    return res.status(200).send({ message: `Invoice #${number} not found` });
 
   const data = fs.readFileSync(invoiceToGetPath, 'utf8');
   res.status(200).send(JSON.parse(data));
 });
 
-app.get('/api/invoices/:number/pdf', requireAuth, (req, res) => {
-  const invoiceToGet = req.params.number;
-  const invoiceToGetPath = `${invoicesDirPath}/invoice-${invoiceToGet}.json`;
-  const invoicePdfPath = `${invoicesPDFPublicPath}/invoice-${invoiceToGet}.pdf`;
+app.get('/api/invoices/:number/:locale/pdf', requireAuth, (req, res) => {
+  const { number, locale } = req.params;
+  const invoiceToGetPath = `${invoicesDirPath}/${number}/${locale.toUpperCase()}_invoice-${number}.json`;
+  const invoicePdfPath = `${invoicesPDFPublicPath}/${locale.toUpperCase()}_invoice-${number}.pdf`;
 
   if (!fs.existsSync(invoiceToGetPath))
-    return res.status(200).send({ message: `Invoice #${invoiceToGet} not found` });
+    return res.status(200).send({ message: `Invoice #${number} not found` });
 
   if (!fs.existsSync(invoicesPDFPublicPath))
     fs.mkdirSync(invoicesPDFPublicPath);
@@ -116,20 +134,21 @@ app.get('/api/invoices/:number/pdf', requireAuth, (req, res) => {
   const doc = new PDFDocument();
 
   doc.pipe(fs.createWriteStream(invoicePdfPath));
-  invoiceTemplate(doc, Object.assign({}, JSON.parse(data), { settings: JSON.parse(settings) }, JSON.parse(profile)));
+  require(`./files/templates/invoice-${locale}.js`)(doc, Object.assign({}, JSON.parse(data), { settings: JSON.parse(settings) }, JSON.parse(profile)));
 
   res.status(200).send(invoicePdfPath.replace('./public/', ''));
 });
 
-app.post('/api/invoices/:number', requireAuth, (req, res) => {
-  const newInvoiceNumber = req.params.number;
-  const newInvoicePath = `${invoicesDirPath}/invoice-${newInvoiceNumber}.json`;
+app.post('/api/invoices/:number/:locale', requireAuth, (req, res) => {
+  const { number, locale } = req.params;
+  const newInvoiceNumberPath = `${invoicesDirPath}/${number}`;
+  const newInvoicePath = `${newInvoiceNumberPath}/${locale}_invoice-${number}.json`;
 
-  if (!fs.existsSync(invoicesDirPath)) {
-    fs.mkdirSync(invoicesDirPath);
+  if (!fs.existsSync(newInvoiceNumberPath)) {
+    fs.mkdirSync(newInvoiceNumberPath);
   }
 
-  fs.readdir(invoicesDirPath, (err, files) => {
+  fs.readdir(newInvoiceNumberPath, (err, files) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
 
@@ -138,20 +157,26 @@ app.post('/api/invoices/:number', requireAuth, (req, res) => {
       if (err)
         return res.status(500).send({ message: `${err}` });
 
-      res.status(200).send(`Invoice #${newInvoiceNumber} has been saved correctly`);
+      res.status(200).send(`Invoice #${number} (${locale}) has been saved correctly`);
     });
   });
 });
 
-app.delete('/api/invoices/:number', requireAuth, (req, res) => {
-  const invoiceToDelete = req.params.number;
-  const invoiceToDeletePath = `${invoicesDirPath}/invoice-${invoiceToDelete}.json`;
+app.delete('/api/invoices/:number/:locale', requireAuth, (req, res) => {
+  const { number, locale } = req.params;
+  const invoiceToDeleteNumberPath = `${invoicesDirPath}/${number}`;
+  const invoiceToDeletePath = `${invoiceToDeleteNumberPath}/${locale}_invoice-${number}.json`;
 
   fs.unlink(invoiceToDeletePath, (err) => {
     if (err)
       return res.status(500).send({ message: `${err}` });
 
-    res.status(200).send(`Invoice #${invoiceToDelete} has been deleted`);
+    const files = fs.readdirSync(`${invoiceToDeleteNumberPath}`);
+    if (files && files.length === 0) {
+      fs.rmdirSync(invoiceToDeleteNumberPath);
+    }
+
+    res.status(200).send(`Invoice #${number} (${locale}) has been deleted`);
   });
 });
 
