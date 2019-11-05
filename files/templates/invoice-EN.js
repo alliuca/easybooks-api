@@ -1,4 +1,5 @@
 const utils = require("./../../utils");
+const locale = "en";
 
 module.exports = (doc, data) => {
   var page = doc.page;
@@ -8,6 +9,7 @@ module.exports = (doc, data) => {
   var paddingHorizontal = 35;
   var primaryColor = data.settings.brandColor;
   var secondaryColor = "#908c8c";
+  var country = utils.getCountryName(data.addressCountry, locale);
 
   // Add top coloured background
 
@@ -70,7 +72,7 @@ module.exports = (doc, data) => {
   doc
     .fontSize(fontSizeBody)
     .fillColor("white")
-    .text(data.addressCityCountry, page.width - 220, 60, {
+    .text(data.addressCity + ", " + country, page.width - 220, 60, {
       width: 180,
       align: "right"
     });
