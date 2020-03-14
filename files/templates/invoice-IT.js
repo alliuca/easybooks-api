@@ -10,6 +10,7 @@ module.exports = (doc, data) => {
   var primaryColor = data.settings.brandColor;
   var secondaryColor = "#908c8c";
   var country = utils.getCountryName(data.addressCountry, locale);
+  var dateOfIssue = utils.formatDate(data.locale, data.dateOfIssue);
 
   // Add top coloured background
 
@@ -118,8 +119,8 @@ module.exports = (doc, data) => {
 
   doc
     .fontSize(fontSizeBody)
-    .fillColor("black")
-    .text(utils.formatDate(data.locale, data.dateOfIssue), 210, 228);
+    .fillColor('black')
+    .text(dateOfIssue, 210, 228);
 
   // Add total
 

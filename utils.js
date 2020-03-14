@@ -1,3 +1,5 @@
+const countries = require("i18n-iso-countries");
+
 module.exports = {
   formatDate: (locale, dateUTC) => {
     var locale = locale === "EN" ? "en-GB" : locale;
@@ -20,5 +22,9 @@ module.exports = {
     });
 
     return numberFormat.format(value);
+  },
+
+  getCountryName: (code, locale) => {
+    return countries.getName(code, locale);
   }
 };
